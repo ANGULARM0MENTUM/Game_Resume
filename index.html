@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Quest2Resume turns video game roles, playtime, and achievements into corporate-ready resume language. Your API key stays in this browser.">
+  <meta name="theme-color" content="#146c43">
+  <title>Quest2Resume — Game-to-corporate resume generator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23146c43'/%3E%3Cpath d='M9 8.5h10.2a4.2 4.2 0 0 1 0 8.4H13' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round'/%3E%3Cpath d='M9 8.5v15M17.2 22.2l2.8 2.8 5.2-6' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700&family=Noto+Serif+SC:wght@500;600&family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="7" fill="currentColor"/>
+          <path d="M9 8.5h10.2a4.2 4.2 0 0 1 0 8.4H13" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M9 8.5v15M17.2 22.2l2.8 2.8 5.2-6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="brand-text">
+          <p class="brand-kicker" data-i18n="kicker">Applicant workspace</p>
+          <p class="brand-name">Quest2Resume</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="lang-switch" role="group" data-i18n-aria="aria.language">
+          <button type="button" class="lang-btn" id="lang-en" data-lang="en" aria-pressed="true">EN</button>
+          <button type="button" class="lang-btn" id="lang-zh" data-lang="zh" aria-pressed="false">中文</button>
+        </div>
+        <p id="provider-chip" class="chip">Checking saved provider…</p>
+        <button type="button" class="btn" id="open-settings" data-i18n="settings">Settings</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <noscript>
+      <p class="banner error">Quest2Resume needs JavaScript. The app runs entirely in your browser. 本页面需要 JavaScript，全部在浏览器中运行。</p>
+    </noscript>
+
+    <p id="storage-warning" class="banner error" hidden data-i18n="storage.warning">
+      This browser blocked local storage. You can use the page, but keys and entries will disappear when you close the tab.
+    </p>
+
+    <section class="intro" aria-labelledby="intro-title">
+      <div>
+        <h1 id="intro-title" data-i18n="intro.title">Translate play into professional experience.</h1>
+        <p class="lede" data-i18n="intro.lede">
+          Record a game the way an application form records a role, or import public Steam playtime and achievements.
+          Both paths fill one ledger. Generation runs in this browser with the provider key you save.
+        </p>
+      </div>
+      <ol class="steps">
+        <li data-i18n="step.1">Save a provider</li>
+        <li data-i18n="step.2">Add experience</li>
+        <li data-i18n="step.3">Generate and export</li>
+      </ol>
+    </section>
+
+    <div class="workspace">
+      <div class="workspace-main">
+        <section class="panel" aria-labelledby="input-heading">
+          <div class="panel-head">
+            <h2 id="input-heading" data-i18n="input.heading">Experience input</h2>
+            <div class="tabs" role="tablist" data-i18n-aria="aria.inputMethod">
+              <button type="button" class="tab" id="tab-manual" role="tab" aria-selected="true" aria-controls="panel-manual" data-i18n="tab.manual">Manual Entry</button>
+              <button type="button" class="tab" id="tab-steam" role="tab" aria-selected="false" aria-controls="panel-steam" tabindex="-1" data-i18n="tab.steam">Steam ID Import</button>
+            </div>
+          </div>
+
+          <div id="panel-manual" role="tabpanel" aria-labelledby="tab-manual">
+            <p class="panel-copy" data-i18n="manual.copy">
+              Add each game as a role: organization, title, dates, hours, and the work you actually did.
+              Use notes for anything a recruiter must not misunderstand, such as a volunteer community role.
+            </p>
+            <div class="row-actions">
+              <button type="button" class="btn primary" id="add-experience" data-i18n="addGame">Add Another Game</button>
+              <button type="button" class="btn" id="load-sample" data-i18n="loadSample">Load sample entries</button>
+            </div>
+          </div>
+
+          <div id="panel-steam" role="tabpanel" aria-labelledby="tab-steam" hidden>
+            <div class="callout">
+              <p data-i18n="steam.callout1">
+                Steam’s Web API does not accept calls from a website. Start this folder with py -3 serve.py and open http://localhost:8080.
+                That program runs on this computer, asks Steam for your games, and sends nothing to a third party.
+                Leave the CORS proxy field blank.
+              </p>
+              <p data-i18n-html="steam.callout2">
+                The profile must expose game details. In Steam: Edit Profile, then Privacy Settings, then set
+                <strong>Game details</strong> to Public. Achievement history also has to be public, and some games publish no stats.
+              </p>
+            </div>
+            <form id="steam-form">
+              <label class="field" for="steam-id">
+                <span class="field-label" data-i18n="steam.id">SteamID64, vanity name, or profile URL</span>
+                <input id="steam-id" name="steamId" type="text" autocomplete="off" spellcheck="false" data-i18n-placeholder="steam.idPlaceholder" placeholder="76561198000000000 or https://steamcommunity.com/id/name">
+              </label>
+              <div class="grid-2">
+                <label class="field" for="steam-limit">
+                  <span class="field-label" data-i18n="steam.limit">Games to import</span>
+                  <input id="steam-limit" name="limit" type="number" min="1" step="1" value="6">
+                  <span class="field-hint" data-i18n="steam.limitHint">Highest playtime first. There is no maximum.</span>
+                </label>
+                <label class="field" for="steam-min-hours">
+                  <span class="field-label" data-i18n="steam.minHours">Minimum hours</span>
+                  <input id="steam-min-hours" name="minHours" type="number" min="0" step="1" value="5">
+                  <span class="field-hint" data-i18n="steam.minHint">Games under this playtime are skipped.</span>
+                </label>
+              </div>
+              <button type="submit" class="btn primary" id="fetch-steam" data-i18n="fetchSteam">Fetch Steam Data</button>
+            </form>
+            <div id="steam-status" class="banner info" hidden role="status"></div>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="ledger-heading">
+          <div class="panel-head">
+            <h2 id="ledger-heading"><span data-i18n="ledger.heading">Experience ledger</span> <span id="exp-count" class="count">0</span></h2>
+            <button type="button" class="btn ghost danger" id="clear-all" data-i18n="clearAll">Clear all</button>
+          </div>
+          <p class="panel-copy" data-i18n="ledger.copy">
+            Steam imports and manual cards share this list. Order here is the order sent to the model.
+            A Steam card starts on the first month in Steam Replay and ends on the last month Replay recorded, or the last day played when that is later. Add the role Steam does not provide.
+          </p>
+          <div id="experience-list" class="exp-list"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="brief-heading">
+          <div class="panel-head">
+            <h2 id="brief-heading" data-i18n="brief.heading">Writing brief</h2>
+            <button type="button" class="btn ghost" id="reset-brief" data-i18n="brief.reset">Reset</button>
+          </div>
+          <p class="panel-copy" data-i18n="brief.copy">This text is sent with every draft. Edits stay in this browser. Reset reloads writing-brief.md. The organization stays the game or the in-game group. A publisher is not filled in as the employer.</p>
+          <label class="field" for="writing-brief">
+            <span class="field-label" data-i18n="brief.label">Instructions for the draft</span>
+            <textarea id="writing-brief" rows="16" spellcheck="true"></textarea>
+          </label>
+        </section>
+      </div>
+
+      <aside class="workspace-side">
+        <section class="panel generate-panel" aria-labelledby="generate-heading">
+          <h2 id="generate-heading" data-i18n="generate.heading">Resume generator</h2>
+          <label class="field" for="target-role">
+            <span class="field-label"><span data-i18n="targetRole">Target role</span> <span class="optional" data-i18n="optional">optional</span></span>
+            <input id="target-role" type="text" maxlength="120" data-i18n-placeholder="targetPlaceholder" placeholder="IT project coordinator">
+            <span class="field-hint" data-i18n="targetHint">Aims the wording. The draft will not invent a job the ledger does not support.</span>
+          </label>
+          <div class="profile-block" id="resume-profile">
+            <h3 class="profile-title" data-i18n="profile.legend">Resume heading</h3>
+            <p class="field-hint" data-i18n="profile.hint">Checked lines appear on the resume. If full name is off, the heading uses your current Steam username.</p>
+            <div class="profile-row">
+              <label class="check"><input type="checkbox" id="include-name" checked><span data-i18n="profile.name">Full name</span></label>
+              <input id="profile-name" type="text" maxlength="80" autocomplete="name" data-i18n-placeholder="profile.namePh" placeholder="Ada Lovelace">
+              <p id="profile-name-note" class="field-hint" hidden></p>
+            </div>
+            <div class="profile-row">
+              <label class="check"><input type="checkbox" id="include-email" checked><span data-i18n="profile.email">Email</span></label>
+              <input id="profile-email" type="email" maxlength="120" autocomplete="email" data-i18n-placeholder="profile.emailPh" placeholder="ada@example.com">
+            </div>
+            <div class="profile-row">
+              <label class="check"><input type="checkbox" id="include-phone"><span data-i18n="profile.phone">Phone</span></label>
+              <input id="profile-phone" type="tel" maxlength="40" autocomplete="tel" data-i18n-placeholder="profile.phonePh" placeholder="+1 555 0100">
+            </div>
+            <div class="profile-row">
+              <label class="check"><input type="checkbox" id="include-location" checked><span data-i18n="profile.location">Location</span></label>
+              <input id="profile-location" type="text" maxlength="80" autocomplete="address-level2" data-i18n-placeholder="profile.locationPh" placeholder="Shanghai">
+            </div>
+            <div class="profile-row">
+              <label class="check"><input type="checkbox" id="include-website"><span data-i18n="profile.website">Website</span></label>
+              <input id="profile-website" type="url" maxlength="160" data-i18n-placeholder="profile.websitePh" placeholder="https://example.com">
+            </div>
+            <div class="profile-row">
+              <label class="check"><input type="checkbox" id="include-linkedin"><span data-i18n="profile.linkedin">LinkedIn</span></label>
+              <input id="profile-linkedin" type="url" maxlength="160" data-i18n-placeholder="profile.linkedinPh" placeholder="https://www.linkedin.com/in/name">
+            </div>
+            <label class="check"><input type="checkbox" id="include-summary" checked><span data-i18n="profile.summary">Professional summary</span></label>
+            <label class="check"><input type="checkbox" id="include-skills" checked><span data-i18n="profile.skills">Skills</span></label>
+            <div class="profile-row">
+              <label class="check"><input type="checkbox" id="include-education"><span data-i18n="profile.education">Education</span></label>
+              <textarea id="profile-education" rows="3" maxlength="800" data-i18n-placeholder="profile.educationPh" placeholder="B.A. History, Example University, 2020"></textarea>
+              <span class="field-hint" data-i18n="profile.educationHint">Only the text you type here is used. The draft will not invent a school or degree.</span>
+            </div>
+          </div>
+          <button type="button" class="btn primary btn-block" id="generate" data-i18n="generate">Generate Professional Resume</button>
+          <p id="generate-meta" class="field-hint">Add a titled entry to generate.</p>
+          <p class="field-hint" data-i18n="generate.languageHint">The draft is written in the language selected in the header.</p>
+          <div id="generate-error" class="banner error" hidden role="alert"></div>
+        </section>
+
+        <section class="panel output-panel" aria-labelledby="output-heading">
+          <div class="panel-head">
+            <h2 id="output-heading" data-i18n="output.heading">Resume draft</h2>
+          </div>
+          <div class="output-toolbar">
+            <button type="button" class="btn" id="copy-resume" disabled data-i18n="copy">Copy to Clipboard</button>
+            <button type="button" class="btn" id="export-txt" disabled data-i18n="exportTxt">Export as TXT</button>
+            <button type="button" class="btn" id="export-html" disabled data-i18n="exportHtml">Export as HTML</button>
+            <button type="button" class="btn" id="export-pdf" disabled data-i18n="exportPdf">Export LaTeX PDF</button>
+          </div>
+          <div id="resume-paper" class="resume-paper" aria-live="polite">
+            <p class="resume-empty">Your resume will appear here. Copy it, or export TXT, HTML, or a LaTeX PDF.</p>
+          </div>
+          <label class="field" id="resume-source-field" hidden>
+            <span class="field-label" data-i18n="draft.edit">Edit the draft</span>
+            <textarea id="resume-source" rows="14" spellcheck="true"></textarea>
+            <span class="field-hint" data-i18n="draft.hint">Change the text here. The preview, copy, and exports use this version.</span>
+          </label>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p data-i18n="footer">Keys and entries stay in localStorage on this device. Resume text is sent only to the provider you select. Steam calls go to serve.py on this computer, and that program calls Steam. No third party sits in between.</p>
+    </div>
+  </footer>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form id="settings-form" autocomplete="off">
+      <div class="dialog-head">
+        <div>
+          <p class="brand-kicker" data-i18n="settings.kicker">Configuration</p>
+          <h2 id="settings-title" data-i18n="settings.title">API key manager</h2>
+        </div>
+        <button type="button" class="icon-btn" id="close-settings" data-i18n-aria="aria.close" aria-label="Close settings">×</button>
+      </div>
+      <div class="dialog-body">
+        <h3 class="dialog-section" data-i18n="section.model">Language model</h3>
+        <label class="field" for="provider">
+          <span class="field-label" data-i18n="provider">Provider</span>
+          <select id="provider" name="provider">
+            <option value="gemini" data-i18n="provider.gemini">Google Gemini</option>
+            <option value="openai" data-i18n="provider.openai">OpenAI</option>
+            <option value="anthropic" data-i18n="provider.anthropic">Anthropic Claude</option>
+            <option value="glm" data-i18n="provider.glm">Zhipu GLM</option>
+            <option value="kimi" data-i18n="provider.kimi">Moonshot Kimi</option>
+            <option value="deepseek" data-i18n="provider.deepseek">DeepSeek</option>
+            <option value="qwen" data-i18n="provider.qwen">Alibaba Qwen</option>
+            <option value="ollama" data-i18n="provider.ollama">Local Ollama</option>
+          </select>
+        </label>
+        <p id="provider-help" class="field-hint"></p>
+
+        <div class="field" id="api-key-field">
+          <label class="field-label" for="api-key" data-i18n="apiKey">API key</label>
+          <div class="field-row">
+            <input id="api-key" name="apiKey" type="password" autocomplete="off" spellcheck="false" data-i18n-placeholder="apiKeyPlaceholder" placeholder="Paste your key">
+            <button type="button" class="btn" id="toggle-api-key" aria-pressed="false">Show</button>
+          </div>
+          <span class="field-hint" data-i18n="apiKeyHint">Saved in this browser’s localStorage. Anyone who can open this profile can read it.</span>
+        </div>
+
+        <label class="field" for="model">
+          <span class="field-label" data-i18n="model">Model</span>
+          <input id="model" name="model" type="text" autocomplete="off" spellcheck="false">
+          <span class="field-hint" data-i18n="modelHint">Editable. If the provider says the model is missing, replace it with one your account can call.</span>
+        </label>
+
+        <label class="field" id="openai-base-field" for="openai-base-url">
+          <span class="field-label" data-i18n="apiBase">API base URL</span>
+          <input id="openai-base-url" name="openaiBaseUrl" type="url" spellcheck="false" placeholder="https://api.openai.com/v1">
+          <span class="field-hint" id="api-base-hint">Include /v1. Point this at a proxy you run if you need one.</span>
+        </label>
+
+        <label class="field" id="ollama-base-field" for="ollama-base-url">
+          <span class="field-label" data-i18n="ollamaBase">Ollama base URL</span>
+          <input id="ollama-base-url" name="ollamaBaseUrl" type="url" spellcheck="false" placeholder="http://localhost:11434">
+        </label>
+
+        <h3 class="dialog-section" data-i18n="section.steam">Steam import</h3>
+        <div class="field">
+          <label class="field-label" for="steam-api-key" data-i18n="steamKey">Steam Web API key</label>
+          <div class="field-row">
+            <input id="steam-api-key" name="steamApiKey" type="password" autocomplete="off" spellcheck="false" data-i18n-placeholder="steamKeyPlaceholder" placeholder="From steamcommunity.com/dev/apikey">
+            <button type="button" class="btn" id="toggle-steam-key" aria-pressed="false">Show</button>
+          </div>
+          <span class="field-hint" data-i18n-html="steamKeyHint">Used only for IPlayerService and ISteamUserStats. Create one at <a href="https://steamcommunity.com/dev/apikey" target="_blank" rel="noopener noreferrer">steamcommunity.com/dev/apikey</a>.</span>
+        </div>
+        <label class="field" for="steam-proxy">
+          <span class="field-label"><span data-i18n="proxy">CORS proxy prefix</span> <span class="optional" data-i18n="optional">optional</span></span>
+          <input id="steam-proxy" name="steamProxy" type="text" spellcheck="false" placeholder="https://your-proxy.example/?">
+          <span class="field-hint" data-i18n="proxyHint">Leave this blank when you use serve.py. Fill it only for a proxy you run yourself. That proxy receives the full Steam URL, including your Steam key. Templates may contain {url} or {raw}.</span>
+        </label>
+        <div id="settings-error" class="banner error" hidden role="alert"></div>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="btn ghost danger" id="clear-keys" data-i18n="removeKeys">Remove saved keys</button>
+        <div class="dialog-actions-right">
+          <button type="button" class="btn" id="cancel-settings" data-i18n="cancel">Cancel</button>
+          <button type="submit" class="btn primary" id="save-settings" data-i18n="saveSettings">Save settings</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
